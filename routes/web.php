@@ -12,6 +12,8 @@ use App\Http\Controllers\Admin\QuizController;
 use App\Http\Controllers\Admin\QuestionController;
 use App\Http\Controllers\Admin\AnswerController;
 use App\Http\Controllers\Admin\TutorialController;
+use Illuminate\Support\Facades\Route; // Make sure this is present
+
 
 /*
 |--------------------------------------------------------------------------
@@ -29,19 +31,21 @@ Route::get('/', function () {
     return view('welcome'); // Laravel's default welcome page
 });
 
-// Authenticated User Routes (Breeze default dashboard)
+// Authenticated User Routes
 Route::middleware(['auth', 'verified'])->group(function () {
-    // User dashboard (you can make this a specific controller later)
+
+    // User dashboard (named for general users)
+    // This will be the default redirect for non-admin users after login
     Route::get('/dashboard', function () {
         return view('dashboard'); // Breeze default dashboard view
-    })->name('dashboard');
+    })->name('user.dashboard'); // Renamed from 'dashboard' to 'user.dashboard'
 
     // Profile management (from Breeze)
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // --- Guided Learning Feature Routes ---
+    // --- Guided Learning Feature Routes (Accessible to all authenticated users) ---
     Route::prefix('learn')->name('learn.')->group(function () {
         Route::get('/', [LearningFlowController::class, 'start'])->name('start');
         Route::get('/{tutorial}/pre-quiz', [LearningFlowController::class, 'showPreQuiz'])->name('pre_quiz');
@@ -54,8 +58,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 });
 
-// Admin Panel Routes (Requires 'auth' and an 'admin' role/middleware - we'll simulate 'admin' for now)
-Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+// Admin Panel Routes (Requires 'auth' and the 'admin' middleware)
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     // Admin Dashboard
     Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
 
